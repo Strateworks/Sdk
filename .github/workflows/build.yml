@@ -1,0 +1,78 @@
+name: Build and Test
+
+on: [push]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        container:
+            image: node:lts
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Set up cache
+              uses: actions/cache@v3
+              with:
+                  path: |
+                      node_modules
+                      dist
+                  key: ${{ github.sha }}
+
+            - name: Install dependencies
+              run: yarn
+
+            - name: Build project
+              run: yarn build
+
+            - name: Upload artifacts
+              uses: actions/upload-artifact@v3
+              with:
+                  name: build-artifacts
+                  path: |
+                      node_modules
+                      dist
+                  retention-days: 1
+
+    test:
+        runs-on: ubuntu-latest
+        container:
+            image: node:lts
+        services:
+            instance:
+                image: ghcr.io/strateworks/engine:v1.0.0
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Restore cache
+              uses: actions/cache@v3
+              with:
+                  path: |
+                      node_modules
+                      dist
+                  key: ${{ github.sha }}
+
+            - name: Decode CI_CA_CRT
+              run: echo "${{ secrets.CI_CA_CRT }}" | base64 --decode > build/certificates/ca.crt
+
+            - name: Decode CI_CLIENT_CRT
+              run: echo "${{ secrets.CI_CLIENT_CRT }}" | base64 --decode > build/certificates/client.crt
+
+            - name: Decode CI_CLIENT_KEY
+              run: echo "${{ secrets.CI_CLIENT_KEY }}" | base64 --decode > build/certificates/client.key
+
+            - name: Copy certificates
+              run: |
+                  chmod 0444 ca.crt client.crt
+                  chmod 0400 client.key
+
+            - name: Run tests
+              run: yarn test:coverage
+
+            - name: Upload artifacts
+              uses: actions/upload-artifact@v3
+              with:
+                  name: test-artifacts
+                  path: |
+                      node_modules
+                      dist
+                  retention-days: 1
