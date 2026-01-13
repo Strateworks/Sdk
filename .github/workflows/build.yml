@@ -20,13 +20,13 @@ jobs:
               run: yarn build
 
             - name: Decode CI_CA_CRT
-              run: echo "${{ env.CI_CA_CRT }}" | base64 --decode > build/certificates/ca.crt
+              run: echo "${{ vars.CI_CA_CRT }}" | base64 --decode > ca.crt
 
             - name: Decode CI_CLIENT_CRT
-              run: echo "${{ env.CI_CLIENT_CRT }}" | base64 --decode > build/certificates/client.crt
+              run: echo "${{ vars.CI_CLIENT_CRT }}" | base64 --decode > client.crt
 
             - name: Decode CI_CLIENT_KEY
-              run: echo "${{ env.CI_CLIENT_KEY }}" | base64 --decode > build/certificates/client.key
+              run: echo "${{ vars.CI_CLIENT_KEY }}" | base64 --decode > client.key
 
             - name: Copy certificates
               run: |
