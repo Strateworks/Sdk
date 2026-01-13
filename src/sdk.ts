@@ -22,6 +22,7 @@ export class Sdk {
                 key: fs.readFileSync(configuration.key_file ?? 'client.key'),
                 rejectUnauthorized: true,
                 passphrase: configuration.passphrase ?? 'd96ab300',
+                checkServerIdentity: (a, b) => undefined
             });
 
             const ws = new WebSocket(url, {
